@@ -80,11 +80,15 @@ def init_db():
             team_name TEXT,
             college TEXT NOT NULL,
             leader_name TEXT NOT NULL,
+            leader_enrollment TEXT NOT NULL DEFAULT '',
             leader_mobile TEXT NOT NULL,
             leader_email TEXT NOT NULL,
             member_2 TEXT,
+            member_2_enrollment TEXT,
             member_3 TEXT,
+            member_3_enrollment TEXT,
             member_4 TEXT,
+            member_4_enrollment TEXT,
             research_domain TEXT NOT NULL,
             problem_statement TEXT NOT NULL,
             proposed_solution TEXT NOT NULL,
@@ -116,6 +120,10 @@ def init_db():
         'payment_screenshot_path': 'ALTER TABLE registrations ADD COLUMN payment_screenshot_path TEXT',
         'payment_submitted_at': 'ALTER TABLE registrations ADD COLUMN payment_submitted_at TEXT',
         'admin_note': 'ALTER TABLE registrations ADD COLUMN admin_note TEXT',
+        'leader_enrollment': "ALTER TABLE registrations ADD COLUMN leader_enrollment TEXT NOT NULL DEFAULT ''",
+        'member_2_enrollment': 'ALTER TABLE registrations ADD COLUMN member_2_enrollment TEXT',
+        'member_3_enrollment': 'ALTER TABLE registrations ADD COLUMN member_3_enrollment TEXT',
+        'member_4_enrollment': 'ALTER TABLE registrations ADD COLUMN member_4_enrollment TEXT',
     }
     for name, sql in migrations.items():
         if name not in columns:
@@ -176,11 +184,15 @@ def register():
     team_name = request.form.get('team_name', '').strip()
     college = request.form.get('college', '').strip()
     leader_name = request.form.get('leader_name', '').strip()
+    leader_enrollment = request.form.get('leader_enrollment', '').strip()
     leader_mobile = request.form.get('leader_mobile', '').strip()
     leader_email = request.form.get('leader_email', '').strip()
     member_2 = request.form.get('member_2', '').strip()
+    member_2_enrollment = request.form.get('member_2_enrollment', '').strip()
     member_3 = request.form.get('member_3', '').strip()
+    member_3_enrollment = request.form.get('member_3_enrollment', '').strip()
     member_4 = request.form.get('member_4', '').strip()
+    member_4_enrollment = request.form.get('member_4_enrollment', '').strip()
     research_domain = request.form.get('research_domain', '').strip()
     problem_statement = request.form.get('problem_statement', '').strip()
     proposed_solution = request.form.get('proposed_solution', '').strip()
@@ -195,6 +207,8 @@ def register():
         errors.append('College name is required.')
     if not leader_name:
         errors.append('Participant/team leader name is required.')
+    if not leader_enrollment:
+        errors.append('Team leader/participant enrollment number is required.')
     if not leader_mobile or not leader_mobile.replace('+', '').replace(' ', '').isdigit():
         errors.append('Enter a valid mobile number.')
     if not leader_email or '@' not in leader_email:
@@ -213,12 +227,22 @@ def register():
     if participation_type == 'team':
         if not team_name:
             errors.append('Team name is required for team participation.')
-        members = [member_2, member_3, member_4]
-        if not any(members):
+        members = [
+            (member_2, member_2_enrollment, 'Member 2'),
+            (member_3, member_3_enrollment, 'Member 3'),
+            (member_4, member_4_enrollment, 'Member 4'),
+        ]
+        if not any(name for name, _enrollment, _label in members):
             errors.append('Add at least one additional team member for team participation.')
+        for name, enrollment, label in members:
+            if name and not enrollment:
+                errors.append(f'{label} enrollment number is required when their name is entered.')
+            if enrollment and not name:
+                errors.append(f'Enter the name for {label} with the supplied enrollment number.')
     else:
         team_name = ''
         member_2 = member_3 = member_4 = ''
+        member_2_enrollment = member_3_enrollment = member_4_enrollment = ''
 
     if not ppt or not ppt.filename:
         errors.append('Please upload your final PPT/PPTX.')
@@ -242,16 +266,18 @@ def register():
     conn.execute('''
         INSERT INTO registrations (
             registration_id, participation_type, team_name, college,
-            leader_name, leader_mobile, leader_email, member_2, member_3,
-            member_4, research_domain, problem_statement, proposed_solution,
-            innovation, expected_impact, ppt_filename, ppt_path,
+            leader_name, leader_enrollment, leader_mobile, leader_email,
+            member_2, member_2_enrollment, member_3, member_3_enrollment,
+            member_4, member_4_enrollment, research_domain, problem_statement,
+            proposed_solution, innovation, expected_impact, ppt_filename, ppt_path,
             payment_status, amount_paise, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ''', (
         registration_id, participation_type, team_name, college,
-        leader_name, leader_mobile, leader_email, member_2, member_3,
-        member_4, research_domain, problem_statement, proposed_solution,
-        innovation, expected_impact, original_name, str(stored_path),
+        leader_name, leader_enrollment, leader_mobile, leader_email,
+        member_2, member_2_enrollment, member_3, member_3_enrollment,
+        member_4, member_4_enrollment, research_domain, problem_statement,
+        proposed_solution, innovation, expected_impact, original_name, str(stored_path),
         'Pending', amount_paise, created_at
     ))
     conn.commit()
