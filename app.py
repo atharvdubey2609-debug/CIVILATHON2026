@@ -406,7 +406,12 @@ def success(registration_id):
 
 @app.route('/uploads/ppt/<path:filename>')
 def uploaded_ppt(filename):
-    return send_from_directory(UPLOAD_DIR, filename, as_attachment=True)
+    # PPT submissions contain participant work and should be accessible only to admins.
+    gate = admin_required()
+    if gate:
+        return gate
+    safe_name = Path(filename).name
+    return send_from_directory(UPLOAD_DIR, safe_name, as_attachment=True)
 
 
 @app.errorhandler(413)
