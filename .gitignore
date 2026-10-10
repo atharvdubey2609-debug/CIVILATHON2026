@@ -1,0 +1,8 @@
+venv/
+.idea/
+__pycache__/
+*.pyc
+.env
+civilathon.db
+uploads/ppt/
+uploads/payment_proofs/

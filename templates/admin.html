@@ -1,0 +1,33 @@
+{% extends 'page.html' %}
+{% block content %}
+<section class="content-page" style="max-width:1200px">
+  <span class="eyebrow">PRIVATE ORGANISER PANEL</span><h1>Registration & payment review</h1>
+  {% with messages = get_flashed_messages(with_categories=true) %}{% for category, message in messages %}<div class="notice {{ category }}">{{ message }}</div>{% endfor %}{% endwith %}
+  <form method="post" action="{{ url_for('admin_logout') }}"><button class="btn btn-secondary" type="submit">Log out</button></form>
+  <p class="lead-dark">Verify the amount in the receiving UPI/bank account before approving. A screenshot alone is not proof that money was received.</p>
+  <div style="overflow-x:auto">
+  <table style="width:100%;border-collapse:collapse;min-width:850px">
+    <thead><tr><th align="left">Registration</th><th align="left">Participant</th><th align="left">Fee</th><th align="left">Reference</th><th align="left">Status</th><th align="left">Proof / review</th></tr></thead>
+    <tbody>
+    {% for r in registrations %}
+      <tr style="border-top:1px solid #ddd;vertical-align:top">
+        <td style="padding:12px 8px"><strong>{{ r['registration_id'] }}</strong><br><small>{{ r['created_at'] }}</small></td>
+        <td style="padding:12px 8px">{{ r['leader_name'] }}<br><small>{{ r['leader_email'] }} · {{ r['leader_mobile'] }}</small><br>{{ r['participation_type']|title }}{% if r['team_name'] %} — {{ r['team_name'] }}{% endif %}</td>
+        <td style="padding:12px 8px">₹{{ '%.0f'|format((r['amount_paise'] or 0) / 100) }}</td>
+        <td style="padding:12px 8px">{{ r['payment_reference'] or '—' }}<br><small>{{ r['payment_submitted_at'] or '' }}</small></td>
+        <td style="padding:12px 8px"><strong>{{ r['payment_status'] }}</strong>{% if r['admin_note'] %}<br><small>{{ r['admin_note'] }}</small>{% endif %}</td>
+        <td style="padding:12px 8px">
+          {% if r['payment_screenshot_path'] %}<a href="{{ url_for('admin_payment_proof', registration_id=r['registration_id']) }}" target="_blank" rel="noopener">View proof</a>{% else %}No proof uploaded{% endif %}
+          {% if r['payment_status'] != 'Paid' and r['payment_screenshot_path'] %}
+          <form method="post" action="{{ url_for('admin_review', registration_id=r['registration_id']) }}" style="margin-top:8px;display:grid;gap:6px">
+            <input name="admin_note" maxlength="500" placeholder="Optional note / rejection reason">
+            <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-primary" type="submit" name="action" value="approve" onclick="return confirm('Confirm you verified the full payment in the receiving account?')">Approve payment</button><button class="btn btn-secondary" type="submit" name="action" value="reject">Reject proof</button></div>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% else %}<tr><td colspan="6" style="padding:18px">No registrations yet.</td></tr>{% endfor %}
+    </tbody>
+  </table></div>
+</section>
+{% endblock %}

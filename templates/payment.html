@@ -1,0 +1,46 @@
+{% extends 'page.html' %}
+{% block content %}
+<div class="registration-shell payment-shell">
+  <div class="registration-intro">
+    <span class="eyebrow">MANUAL UPI PAYMENT</span>
+    <h1>Pay your CIVILATHON entry fee.</h1>
+    <p class="lead-dark">Pay using your UPI app, then upload the payment confirmation and transaction reference. The organisers will verify it manually.</p>
+  </div>
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}<div class="form-notices">{% for category, message in messages %}<div class="notice {{ category }}">{{ message }}</div>{% endfor %}</div>{% endif %}
+  {% endwith %}
+  <div class="payment-layout">
+    <div class="payment-card payment-summary">
+      <span class="summary-label">REGISTRATION</span>
+      <strong class="registration-code">{{ registration['registration_id'] }}</strong>
+      <div class="summary-row"><span>Participant</span><strong>{{ registration['leader_name'] }}</strong></div>
+      <div class="summary-row"><span>College</span><strong>{{ registration['college'] }}</strong></div>
+      <div class="summary-row"><span>Participation</span><strong>{{ registration['participation_type']|title }}</strong></div>
+      <div class="summary-row"><span>PPT</span><strong>{{ registration['ppt_filename'] }}</strong></div>
+      <div class="summary-row total"><span>Entry Fee</span><strong>₹{{ '%.0f'|format(amount) }}</strong></div>
+      <div class="summary-row"><span>Status</span><strong>{{ registration['payment_status'] }}</strong></div>
+    </div>
+    <div class="payment-card payment-action-card">
+      <div class="secure-mark">UPI PAYMENT</div>
+      <h2>1. Pay using UPI</h2>
+      {% if qr_available %}<img src="{{ url_for('static', filename='images/payment-qr.png') }}" alt="CIVILATHON UPI QR code" style="display:block;max-width:260px;width:100%;margin:1rem auto;border-radius:12px">{% else %}<div class="notice"><strong>QR image pending.</strong><p>The organisers' QR code will appear here once it is added.</p></div>{% endif %}
+      <p><strong>UPI ID</strong></p>
+      <p id="upi-id" style="font-weight:700;word-break:break-word">{{ upi_id }}</p>
+      <button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText({{ upi_id|tojson }}).then(()=>this.textContent='UPI ID copied')">Copy UPI ID</button>
+      <p class="lead-dark" style="margin-top:1rem">Pay exactly <strong>₹{{ '%.0f'|format(amount) }}</strong>. Make sure the recipient UPI ID matches before confirming payment.</p>
+      <hr>
+      <h2>2. Submit payment proof</h2>
+      <form method="post" enctype="multipart/form-data">
+        <label for="payment_reference">UPI transaction/reference ID *</label>
+        <input id="payment_reference" name="payment_reference" type="text" minlength="6" maxlength="100" required placeholder="Enter UTR / transaction ID" autocomplete="off">
+        <label for="payment_screenshot">Payment screenshot or PDF *</label>
+        <input id="payment_screenshot" name="payment_screenshot" type="file" accept=".png,.jpg,.jpeg,.webp,.pdf,image/png,image/jpeg,image/webp,application/pdf" required>
+        <small>Accepted: PNG, JPG, WEBP or PDF. Maximum upload size: 8 MB.</small>
+        <button type="submit" class="btn btn-primary payment-btn">Submit for verification</button>
+      </form>
+      <p class="payment-status">Your status will remain <strong>Pending Verification</strong> until an organiser checks the payment in the receiving account.</p>
+      <a class="back-link" href="{{ url_for('home') }}">← Back to CIVILATHON</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
