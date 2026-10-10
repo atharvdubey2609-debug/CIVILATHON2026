@@ -19,7 +19,7 @@
           <td style="padding:12px 8px"><strong>{{ r['registration_id'] }}</strong><br><small>{{ r['created_at'] }}</small></td>
           <td style="padding:12px 8px">
             <strong>{{ r['leader_name'] }}</strong><br>
-            <small>{{ r['leader_email'] }} · {{ r['leader_mobile'] }}</small><br>
+            <small>{{ r['leader_email'] }} · {{ r['leader_mobile'] }}</small><br><small>Enrollment: {{ r['leader_enrollment'] or '—' }}</small><br>
             {{ r['participation_type']|title }}{% if r['team_name'] %} — {{ r['team_name'] }}{% endif %}
             <details style="margin-top:10px;min-width:220px">
               <summary style="cursor:pointer;font-weight:700">View all submission fields</summary>
@@ -29,11 +29,15 @@
                 <p><strong>Team name:</strong> {{ r['team_name'] or '—' }}</p>
                 <p><strong>College:</strong> {{ r['college'] }}</p>
                 <p><strong>Team leader / participant:</strong> {{ r['leader_name'] }}</p>
+                <p><strong>Enrollment number:</strong> {{ r['leader_enrollment'] or '—' }}</p>
                 <p><strong>Mobile:</strong> {{ r['leader_mobile'] }}</p>
-                <p><strong>Email:</strong> {{ r['leader_email'] }}</p>
+                <p><strong>Team leader email ID:</strong> {{ r['leader_email'] }}</p>
                 <p><strong>Member 2:</strong> {{ r['member_2'] or '—' }}</p>
+                <p><strong>Member 2 enrollment number:</strong> {{ r['member_2_enrollment'] or '—' }}</p>
                 <p><strong>Member 3:</strong> {{ r['member_3'] or '—' }}</p>
+                <p><strong>Member 3 enrollment number:</strong> {{ r['member_3_enrollment'] or '—' }}</p>
                 <p><strong>Member 4:</strong> {{ r['member_4'] or '—' }}</p>
+                <p><strong>Member 4 enrollment number:</strong> {{ r['member_4_enrollment'] or '—' }}</p>
                 <p><strong>Research domain:</strong> {{ r['research_domain'] }}</p>
                 <p><strong>Problem statement:</strong><br>{{ r['problem_statement'] }}</p>
                 <p><strong>Proposed solution:</strong><br>{{ r['proposed_solution'] }}</p>
