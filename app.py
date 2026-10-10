@@ -7,9 +7,29 @@ import uuid
 import os
 
 BASE_DIR = Path(__file__).resolve().parent
-DB_PATH = BASE_DIR / 'civilathon.db'
-UPLOAD_DIR = BASE_DIR / 'uploads' / 'ppt'
-PAYMENT_PROOF_DIR = BASE_DIR / 'uploads' / 'payment_proofs'
+# Railway volume is mounted at /data. Use it when available so registrations
+# and uploaded files survive deployments; keep BASE_DIR for local development.
+DATA_DIR = Path(os.getenv('CIVILATHON_DATA_DIR', '/data' if Path('/data').is_dir() else str(BASE_DIR))).resolve()
+DATA_DIR.mkdir(parents=True, exist_ok=True)
+
+DB_PATH = DATA_DIR / 'civilathon.db'
+UPLOAD_DIR = DATA_DIR / 'uploads' / 'ppt'
+PAYMENT_PROOF_DIR = DATA_DIR / 'uploads' / 'payment_proofs'
+
+# Best-effort migration from the old application directory if files still exist.
+# Never overwrite data already present on the persistent volume.
+import shutil
+_old_db = BASE_DIR / 'civilathon.db'
+if DB_PATH != _old_db and not DB_PATH.exists() and _old_db.is_file():
+    shutil.copy2(_old_db, DB_PATH)
+for _old_dir, _new_dir in [
+    (BASE_DIR / 'uploads' / 'ppt', UPLOAD_DIR),
+    (BASE_DIR / 'uploads' / 'payment_proofs', PAYMENT_PROOF_DIR),
+]:
+    if _old_dir.resolve() != _new_dir.resolve() and _old_dir.is_dir() and not _new_dir.exists():
+        _new_dir.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copytree(_old_dir, _new_dir)
+
 UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
 PAYMENT_PROOF_DIR.mkdir(parents=True, exist_ok=True)
 
