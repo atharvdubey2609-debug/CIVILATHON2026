@@ -145,3 +145,8 @@ footer{background:#081923;color:#b8c3c8}footer strong{color:#d3aa65}
 .page-main{min-height:78vh}.content-page{width:min(1150px,92%);margin:0 auto;padding:72px 0 90px}.content-page h1{color:#10212c;font:700 clamp(44px,7vw,76px)/1.02 'Space Grotesk';margin:8px 0 32px}.page-content{background:#fffdfa;border:1px solid #ded9ce;border-radius:16px;padding:42px;box-shadow:0 14px 40px rgba(18,33,43,.07)}.page-content h2{color:#182c37;font:700 32px/1.2 'Space Grotesk';margin:34px 0 14px}.page-content h2:first-child{margin-top:0}.page-content p,.page-content li{color:#4f5d65}.page-content strong{color:#182c37}.page-content .cards{background:transparent;padding:0;border:0;box-shadow:none}
 .site-footer{padding:30px 5%;text-align:center;background:#081923;color:#b8c3c8}.site-footer strong{color:#d3aa65}.site-footer span{margin-left:12px}
 @media(max-width:780px){.nav-wrap{width:92%}.brand{min-width:0}.brand img:first-child{width:125px;height:50px}.brand img:last-child{width:52px;height:52px}.content-page{padding-top:48px}.page-content{padding:25px}.content-page h1{font-size:46px}}
+
+
+/* Fix inner-page header: constrain the middle CIC logo instead of its 1536px intrinsic size. */
+.brand img:nth-of-type(2){width:58px;height:58px;max-width:58px;max-height:58px;flex:0 0 58px;object-fit:contain;border-radius:50%;background:#fff}
+@media(max-width:780px){.brand img:nth-of-type(2){width:52px;height:52px;max-width:52px;max-height:52px;flex-basis:52px}}
