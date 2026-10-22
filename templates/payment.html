@@ -23,7 +23,7 @@
     <div class="payment-card payment-action-card">
       <div class="secure-mark">UPI PAYMENT</div>
       <h2>1. Pay using UPI</h2>
-      {% if qr_available %}<img src="{{ url_for('static', filename='images/payment-qr.png') }}" alt="CIVILATHON UPI QR code" style="display:block;max-width:260px;width:100%;margin:1rem auto;border-radius:12px">{% else %}<div class="notice"><strong>QR image pending.</strong><p>The organisers' QR code will appear here once it is added.</p></div>{% endif %}
+      {% if qr_available %}<img src="{{ url_for('static', filename='images/payment-qr.jpg') }}" alt="CIVILATHON UPI QR code" style="display:block;max-width:260px;width:100%;margin:1rem auto;border-radius:12px">{% else %}<div class="notice"><strong>QR image pending.</strong><p>The organisers' QR code will appear here once it is added.</p></div>{% endif %}
       <p><strong>UPI ID</strong></p>
       <p id="upi-id" style="font-weight:700;word-break:break-word">{{ upi_id }}</p>
       <button type="button" class="btn btn-secondary" onclick="navigator.clipboard.writeText({{ upi_id|tojson }}).then(()=>this.textContent='UPI ID copied')">Copy UPI ID</button>
