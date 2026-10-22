@@ -61,7 +61,7 @@ DOMAINS = [
 
 UPI_ID = os.getenv('CIVILATHON_UPI_ID', '9713559328@axl').strip()
 ADMIN_PASSWORD = os.getenv('CIVILATHON_ADMIN_PASSWORD', '').strip()
-PAYMENT_QR_PATH = BASE_DIR / 'static' / 'images' / 'payment-qr.png'
+PAYMENT_QR_PATH = BASE_DIR / 'static' / 'images' / 'payment-qr.jpg'
 
 
 def get_db():
