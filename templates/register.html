@@ -8,8 +8,8 @@
   </div>
 
   <div class="fees">
-    <div><small>TEAM PARTICIPATION</small><strong>₹149</strong><span>per team · up to 4 members</span></div>
-    <div><small>INDIVIDUAL PARTICIPATION</small><strong>₹49</strong><span>per participant</span></div>
+    <div><small>TEAM PARTICIPATION</small><strong>₹150</strong><span>per team · up to 4 members</span></div>
+    <div><small>INDIVIDUAL PARTICIPATION</small><strong>₹50</strong><span>per participant</span></div>
   </div>
 
   {% with messages = get_flashed_messages(with_categories=true) %}
@@ -29,8 +29,8 @@
         <h2>Participation details</h2>
         <p>Select how you are participating.</p>
         <div class="choice-grid">
-          <label class="choice-card"><input type="radio" name="participation_type" value="team" checked><span><strong>Team</strong><small>Up to 4 members · ₹149</small></span></label>
-          <label class="choice-card"><input type="radio" name="participation_type" value="individual"><span><strong>Individual</strong><small>Single participant · ₹49</small></span></label>
+          <label class="choice-card"><input type="radio" name="participation_type" value="team" checked><span><strong>Team</strong><small>Up to 4 members · ₹150</small></span></label>
+          <label class="choice-card"><input type="radio" name="participation_type" value="individual"><span><strong>Individual</strong><small>Single participant · ₹50</small></span></label>
         </div>
         <div class="form-grid two-col">
           <label id="team-name-field">Team Name<input type="text" name="team_name" placeholder="e.g. BuildVision" data-team-required></label>
@@ -85,7 +85,7 @@
 
     <div class="form-actions">
       <button class="btn btn-primary" type="submit">Continue to Payment</button>
-      <p>After you submit, your PPT is securely stored and you will be taken to the Razorpay payment screen. Your registration becomes active after successful payment verification.</p>
+      <p>After you submit, your PPT is securely stored and you will be taken to the manual UPI payment screen. Your registration becomes active after successful payment verification.</p>
     </div>
   </form>
 </div>
