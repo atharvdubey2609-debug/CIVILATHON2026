@@ -37,8 +37,8 @@ ALLOWED_EXTENSIONS = {'.ppt', '.pptx'}
 ALLOWED_PROOF_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.pdf'}
 MAX_FILE_SIZE = 25 * 1024 * 1024
 MAX_PROOF_SIZE = 8 * 1024 * 1024
-TEAM_FEE = 14900       # ₹149 in paise
-INDIVIDUAL_FEE = 4900  # ₹49 in paise
+TEAM_FEE = 15000      # ₹150 in paise
+INDIVIDUAL_FEE = 5000 # ₹50 in paise
 
 app = Flask(__name__)
 app.secret_key = os.getenv('FLASK_SECRET_KEY', 'local-development-only-change-this-secret')
