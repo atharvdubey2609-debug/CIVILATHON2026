@@ -5,7 +5,7 @@
   <div class="success-card">
     <span class="eyebrow">SUBMISSION RECEIVED</span>
     <h1>Registration submitted successfully.</h1>
-    <p class="lead-dark">Your details and PPT have been saved. Keep the registration ID below for future communication.</p>
+    <p class="lead-dark">Your registration details have been saved. Keep the registration ID below for future communication.</p>
     <div class="registration-id"><small>YOUR REGISTRATION ID</small><strong>{{ registration['registration_id'] }}</strong></div>
     <div class="success-grid">
       <div><span>Participant / Leader</span><strong>{{ registration['leader_name'] }}</strong></div>
@@ -13,8 +13,9 @@
       <div><span>Participation</span><strong>{{ registration['participation_type']|title }}</strong></div>
       <div><span>Payment Status</span><strong>{{ registration['payment_status'] }}</strong></div>
       <div><span>Research Domain</span><strong>{{ registration['research_domain'] }}</strong></div>
-      <div><span>PPT</span><strong>{{ registration['ppt_filename'] }}</strong></div>
+      <div><span>PPT Status</span><strong>{% if registration['ppt_filename'] %}Submitted: {{ registration['ppt_filename'] }}{% else %}Not submitted yet{% endif %}</strong></div>
     </div>
+    {% if not registration['ppt_filename'] %}<div class="notice"><strong>PPT pending?</strong> You can upload your final PPT/PPTX later, but it must be submitted before 29 October 2026.</div><a class="btn btn-primary" href="{{ url_for('submit_ppt', registration_id=registration['registration_id']) }}">Upload PPT later / submit now</a>{% else %}<div class="notice"><strong>PPT received.</strong> Your presentation has been submitted.</div>{% endif %}
     {% if registration['payment_status'] != 'Paid' %}<div class="notice"><strong>Important:</strong> Your registration is not payment-confirmed until an organiser verifies receipt of the fee.</div><a class="btn btn-primary" href="{{ url_for('payment', registration_id=registration['registration_id']) }}">Open payment page / update proof</a>{% else %}<div class="notice"><strong>Payment verified.</strong> Your registration fee has been manually confirmed by the organisers.</div>{% endif %}
     <a class="btn btn-primary" href="{{ url_for('home') }}">Back to Civilathon</a>
   </div>
