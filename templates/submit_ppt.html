@@ -1,0 +1,32 @@
+{% extends 'page.html' %}
+{% block content %}
+<section class="content-page" style="max-width:760px">
+  <span class="eyebrow">CIVILATHON PPT SUBMISSION</span>
+  {% if closed %}
+    <h1>PPT submission is closed.</h1>
+    <div class="notice"><strong>The deadline has passed.</strong> Final PPTs had to be uploaded before the event date, 29 October 2026. Please contact the organisers if you need assistance.</div>
+  {% else %}
+    <h1>Submit your final presentation</h1>
+    <p class="lead-dark">Registration ID: <strong>{{ registration['registration_id'] }}</strong></p>
+    {% if registration['ppt_filename'] %}
+      <div class="notice">A PPT has already been submitted for this registration. You can upload a replacement before 29 October 2026 if needed.</div>
+    {% else %}
+      <div class="notice"><strong>PPT not ready yet?</strong> You can submit it here any time before the event date, 29 October 2026. Accepted formats: .ppt and .pptx. Maximum file size: 25 MB.</div>
+    {% endif %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-stack">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <form method="POST" enctype="multipart/form-data" class="registration-form">
+      <label class="upload-box">Final PPT / PPTX *<input type="file" name="ppt" accept=".ppt,.pptx" required><span>Choose a .ppt or .pptx file · Maximum 25 MB</span></label>
+      <button class="btn btn-primary" type="submit">Submit PPT</button>
+    </form>
+  {% endif %}
+  <p><a href="{{ url_for('success', registration_id=registration['registration_id']) }}">Back to registration confirmation</a></p>
+</section>
+{% endblock %}
