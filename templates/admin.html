@@ -8,6 +8,16 @@
   {% endwith %}
   <form method="post" action="{{ url_for('admin_logout') }}"><button class="btn btn-secondary" type="submit">Log out</button></form>
   <p class="lead-dark">Verify the amount in the receiving UPI/bank account before approving. A screenshot alone is not proof that money was received.</p>
+  <section style="margin:18px 0;padding:16px;border:1px solid #b91c1c;border-radius:8px">
+    <h2 style="margin-top:0">Clear test registrations</h2>
+    <p>This permanently removes all registration records from the database. The website, admin account, payment settings, and uploaded files remain unchanged. Use only if every existing registration is test data.</p>
+    <form method="post" action="{{ url_for('admin_clear_test_registrations') }}" onsubmit="return confirm('This permanently deletes ALL registration records. Continue only if every record is test data.');" style="display:grid;gap:8px;max-width:440px">
+      <label for="clear-confirmation">Type <strong>CLEAR ALL TEST REGISTRATIONS</strong> to confirm</label>
+      <input id="clear-confirmation" name="confirmation" required autocomplete="off" placeholder="Enter confirmation phrase">
+      <button class="btn btn-secondary" type="submit">Delete all registration records</button>
+    </form>
+  </section>
+
   <div style="overflow-x:auto">
     <table style="width:100%;border-collapse:collapse;min-width:900px">
       <thead>
