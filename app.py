@@ -244,9 +244,7 @@ def register():
         member_2 = member_3 = member_4 = ''
         member_2_enrollment = member_3_enrollment = member_4_enrollment = ''
 
-    if not ppt or not ppt.filename:
-        errors.append('Please upload your final PPT/PPTX.')
-    elif not allowed_file(ppt.filename):
+    if ppt and ppt.filename and not allowed_file(ppt.filename):
         errors.append('Only .ppt and .pptx files are accepted.')
 
     if errors:
@@ -255,10 +253,14 @@ def register():
         return render_template('register.html', domains=DOMAINS), 400
 
     registration_id = make_registration_id()
-    original_name = secure_filename(ppt.filename)
-    stored_name = f'{registration_id}_{original_name}'
-    stored_path = UPLOAD_DIR / stored_name
-    ppt.save(stored_path)
+    original_name = ''
+    stored_path = ''
+    if ppt and ppt.filename:
+        original_name = secure_filename(ppt.filename)
+        stored_name = f'{registration_id}_{original_name}'
+        file_path = UPLOAD_DIR / stored_name
+        ppt.save(file_path)
+        stored_path = str(file_path)
 
     amount_paise = TEAM_FEE if participation_type == 'team' else INDIVIDUAL_FEE
     created_at = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
@@ -428,6 +430,47 @@ def success(registration_id):
     if not registration:
         return render_template('page.html', title='Registration Not Found', content='<p class="lead-dark">The registration ID could not be found.</p>'), 404
     return render_template('success.html', registration=registration)
+
+
+
+@app.route('/submit-ppt/<registration_id>', methods=['GET', 'POST'])
+def submit_ppt(registration_id):
+    conn = get_db()
+    registration = conn.execute(
+        'SELECT * FROM registrations WHERE registration_id = ?', (registration_id,)
+    ).fetchone()
+    conn.close()
+    if not registration:
+        return render_template('page.html', title='Registration Not Found',
+                              content='<p class="lead-dark">The registration ID could not be found.</p>'), 404
+
+    # PPTs must be submitted before the event day begins.
+    if datetime.now().date() >= datetime(2026, 10, 29).date():
+        return render_template('submit_ppt.html', registration=registration, closed=True), 410
+
+    if request.method == 'POST':
+        ppt = request.files.get('ppt')
+        if not ppt or not ppt.filename:
+            flash('Please choose your final PPT/PPTX file.', 'error')
+            return redirect(url_for('submit_ppt', registration_id=registration_id))
+        if not allowed_file(ppt.filename):
+            flash('Only .ppt and .pptx files are accepted.', 'error')
+            return redirect(url_for('submit_ppt', registration_id=registration_id))
+
+        original_name = secure_filename(ppt.filename)
+        stored_name = f'{registration_id}_{uuid.uuid4().hex[:8]}_{original_name}'
+        stored_path = UPLOAD_DIR / stored_name
+        ppt.save(stored_path)
+
+        conn = get_db()
+        conn.execute('UPDATE registrations SET ppt_filename = ?, ppt_path = ? WHERE registration_id = ?',
+                     (original_name, str(stored_path), registration_id))
+        conn.commit()
+        conn.close()
+        flash('Your PPT has been uploaded successfully.', 'success')
+        return redirect(url_for('success', registration_id=registration_id))
+
+    return render_template('submit_ppt.html', registration=registration, closed=False)
 
 
 @app.route('/uploads/ppt/<path:filename>')
