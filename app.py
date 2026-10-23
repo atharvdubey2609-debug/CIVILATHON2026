@@ -362,6 +362,24 @@ def admin_logout():
     return redirect(url_for('admin_login'))
 
 
+
+@app.route('/admin/clear-test-registrations', methods=['POST'])
+def admin_clear_test_registrations():
+    gate = admin_required()
+    if gate:
+        return gate
+    confirmation = request.form.get('confirmation', '').strip()
+    if confirmation != 'CLEAR ALL TEST REGISTRATIONS':
+        flash('Registrations were not deleted. Confirmation phrase did not match.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    conn = get_db()
+    conn.execute('DELETE FROM registrations')
+    conn.commit()
+    conn.close()
+    flash('All registration records have been cleared. Uploaded files were left untouched.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+
 @app.route('/admin')
 def admin_dashboard():
     gate = admin_required()
