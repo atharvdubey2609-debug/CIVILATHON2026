@@ -2,6 +2,7 @@ from flask import Flask, render_template, request, redirect, url_for, flash, sen
 from werkzeug.utils import secure_filename
 from pathlib import Path
 from datetime import datetime
+from zoneinfo import ZoneInfo
 import sqlite3
 import uuid
 import os
@@ -445,7 +446,7 @@ def submit_ppt(registration_id):
                               content='<p class="lead-dark">The registration ID could not be found.</p>'), 404
 
     # PPTs must be submitted before the event day begins.
-    if datetime.now().date() >= datetime(2026, 10, 29).date():
+    if datetime.now(ZoneInfo('Asia/Kolkata')).date() >= datetime(2026, 10, 29).date():
         return render_template('submit_ppt.html', registration=registration, closed=True), 410
 
     if request.method == 'POST':
