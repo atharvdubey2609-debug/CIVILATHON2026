@@ -4,6 +4,8 @@ from pathlib import Path
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import sqlite3
+import csv
+import io
 import uuid
 import os
 
@@ -377,6 +379,69 @@ def admin_clear_test_registrations():
     conn.commit()
     conn.close()
     flash('All registration records have been cleared. Uploaded files were left untouched.', 'success')
+    return redirect(url_for('admin_dashboard'))
+
+
+@app.route('/admin/export-registrations.csv')
+def admin_export_registrations():
+    gate = admin_required()
+    if gate:
+        return gate
+    conn = get_db()
+    rows = conn.execute('''
+        SELECT registration_id, leader_name, leader_mobile, leader_email,
+               participation_type, team_name, college, payment_status, created_at
+        FROM registrations
+        ORDER BY created_at DESC
+    ''').fetchall()
+    conn.close()
+    output = io.StringIO(newline='')
+    writer = csv.writer(output)
+    writer.writerow(['Registration ID', 'Participant / Team Leader', 'Mobile Number',
+                     'Email', 'Participation Type', 'Team Name', 'College',
+                     'Payment Status', 'Registered At'])
+    for row in rows:
+        writer.writerow([row['registration_id'], row['leader_name'], row['leader_mobile'],
+                         row['leader_email'], row['participation_type'], row['team_name'] or '',
+                         row['college'], row['payment_status'], row['created_at']])
+    from flask import Response
+    return Response('\ufeff' + output.getvalue(), mimetype='text/csv; charset=utf-8',
+                    headers={'Content-Disposition': 'attachment; filename="civilathon_participant_contacts.csv"'})
+
+@app.post('/admin/delete-registration/<registration_id>')
+def admin_delete_registration(registration_id):
+    gate = admin_required()
+    if gate:
+        return gate
+    conn = get_db()
+    row = conn.execute('SELECT * FROM registrations WHERE registration_id = ?', (registration_id,)).fetchone()
+    if not row:
+        conn.close()
+        flash('Registration not found; nothing was deleted.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    if row['payment_status'] == 'Paid':
+        conn.close()
+        flash('This registration is marked Paid and cannot be deleted here. Review it carefully first.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    confirmation = request.form.get('confirmation', '').strip()
+    if confirmation != registration_id:
+        conn.close()
+        flash('Registration was not deleted. Enter the exact registration ID to confirm.', 'error')
+        return redirect(url_for('admin_dashboard'))
+    # Delete only uploaded files belonging to this registration and inside known upload folders.
+    for field, allowed_dir in [('ppt_path', UPLOAD_DIR), ('payment_screenshot_path', PAYMENT_PROOF_DIR)]:
+        raw_path = row[field]
+        if raw_path:
+            path = Path(raw_path).resolve()
+            if path.parent == allowed_dir.resolve() and path.is_file():
+                try:
+                    path.unlink()
+                except OSError:
+                    pass
+    conn.execute('DELETE FROM registrations WHERE registration_id = ?', (registration_id,))
+    conn.commit()
+    conn.close()
+    flash(f'Registration {registration_id} and its associated uploaded files were deleted.', 'success')
     return redirect(url_for('admin_dashboard'))
 
 
