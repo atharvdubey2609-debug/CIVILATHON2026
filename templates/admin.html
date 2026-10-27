@@ -8,6 +8,8 @@
   {% endwith %}
   <form method="post" action="{{ url_for('admin_logout') }}"><button class="btn btn-secondary" type="submit">Log out</button></form>
   <p class="lead-dark">Verify the amount in the receiving UPI/bank account before approving. A screenshot alone is not proof that money was received.</p>
+  <p style="margin:16px 0"><a class="btn btn-primary" href="{{ url_for('admin_export_registrations') }}">Download participant contacts (CSV)</a></p>
+  <p class="lead-dark">The CSV includes registration ID, participant/team leader name, mobile number, email, team, college, payment status, and registration date. Team members' phone numbers are not collected by this form.</p>
   <section style="margin:18px 0;padding:16px;border:1px solid #b91c1c;border-radius:8px">
     <h2 style="margin-top:0">Clear test registrations</h2>
     <p>This permanently removes all registration records from the database. The website, admin account, payment settings, and uploaded files remain unchanged. Use only if every existing registration is test data.</p>
@@ -74,6 +76,17 @@
             {% if r['payment_screenshot_path'] %}
               <a href="{{ url_for('admin_payment_proof', registration_id=r['registration_id']) }}" target="_blank" rel="noopener">View payment proof</a>
             {% else %}No payment proof uploaded{% endif %}
+            {% if r['payment_status'] != 'Paid' %}
+              <details style="margin-top:12px;border-top:1px solid #ddd;padding-top:8px">
+                <summary style="cursor:pointer;color:#b91c1c;font-weight:700">Delete this registration</summary>
+                <p style="font-size:0.9em">Only registrations not marked Paid can be deleted here. This also attempts to remove their uploaded PPT/payment proof. This cannot be undone.</p>
+                <form method="post" action="{{ url_for('admin_delete_registration', registration_id=r['registration_id']) }}" style="display:grid;gap:6px" onsubmit="return confirm('Permanently delete registration {{ r['registration_id'] }} and its uploaded files?');">
+                  <label for="delete-confirm-{{ r['registration_id'] }}">Type registration ID to confirm</label>
+                  <input id="delete-confirm-{{ r['registration_id'] }}" name="confirmation" required autocomplete="off" placeholder="{{ r['registration_id'] }}">
+                  <button class="btn btn-secondary" type="submit">Delete this entry</button>
+                </form>
+              </details>
+            {% endif %}
             {% if r['payment_status'] != 'Paid' and r['payment_screenshot_path'] %}
               <form method="post" action="{{ url_for('admin_review', registration_id=r['registration_id']) }}" style="margin-top:8px;display:grid;gap:6px">
                 <input name="admin_note" maxlength="500" placeholder="Optional note / rejection reason">
