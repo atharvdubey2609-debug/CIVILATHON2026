@@ -8,7 +8,7 @@
   {% endwith %}
   <form method="post" action="{{ url_for('admin_logout') }}"><button class="btn btn-secondary" type="submit">Log out</button></form>
   <p class="lead-dark">Verify the amount in the receiving UPI/bank account before approving. A screenshot alone is not proof that money was received.</p>
-  <p style="margin:16px 0"><a class="btn btn-primary" href="{{ url_for('admin_export_registrations') }}">Download participant contacts (CSV)</a></p>
+  <p style="margin:16px 0;display:flex;gap:10px;flex-wrap:wrap"><a class="btn btn-primary" href="{{ url_for('admin_export_registrations') }}">Download participant contacts (CSV)</a><a class="btn btn-primary" href="{{ url_for('admin_attendance_sheet') }}">Download attendance sheet (PDF)</a></p>
   <p class="lead-dark">The CSV includes registration ID, participant/team leader name, mobile number, email, team, college, payment status, and registration date. Team members' phone numbers are not collected by this form.</p>
   <section style="margin:18px 0;padding:16px;border:1px solid #b91c1c;border-radius:8px">
     <h2 style="margin-top:0">Clear test registrations</h2>
