@@ -445,6 +445,56 @@ def admin_delete_registration(registration_id):
     return redirect(url_for('admin_dashboard'))
 
 
+
+@app.route('/admin/attendance-sheet.pdf')
+def admin_attendance_sheet():
+    gate = admin_required()
+    if gate:
+        return gate
+    conn = get_db()
+    regs = conn.execute("SELECT registration_id, participation_type, team_name, college, leader_name, leader_mobile, member_2, member_3, member_4 FROM registrations ORDER BY team_name COLLATE NOCASE, leader_name COLLATE NOCASE").fetchall()
+    conn.close()
+    from reportlab.lib import colors
+    from reportlab.lib.pagesizes import A4, landscape
+    from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+    from reportlab.lib.enums import TA_CENTER
+    from reportlab.lib.units import mm
+    from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+    from flask import make_response
+    buffer = io.BytesIO()
+    pdf = SimpleDocTemplate(buffer, pagesize=landscape(A4), rightMargin=10*mm, leftMargin=10*mm, topMargin=10*mm, bottomMargin=10*mm, title="CIVILATHON 2026 Attendance Sheet")
+    styles = getSampleStyleSheet()
+    title = ParagraphStyle("AttTitle", parent=styles["Title"], fontName="Helvetica-Bold", fontSize=15, leading=18, alignment=TA_CENTER, textColor=colors.HexColor("#7B1F24"), spaceAfter=3*mm)
+    cell = ParagraphStyle("AttCell", parent=styles["Normal"], fontName="Helvetica", fontSize=8, leading=10)
+    header = ParagraphStyle("AttHeader", parent=cell, fontName="Helvetica-Bold", textColor=colors.white)
+    story = [Paragraph("CIVILATHON 2026 — PARTICIPANT ATTENDANCE SHEET", title), Paragraph("Civil Impact Club (CIC), LNCT Bhopal · 29 October 2026 · S-21, LNCTS New", styles["Normal"]), Spacer(1, 4*mm)]
+    rows = [[Paragraph("S. No.", header), Paragraph("Team / Reg. ID", header), Paragraph("Participant Name", header), Paragraph("Mobile Number", header), Paragraph("College", header), Paragraph("Signature", header)]]
+    serial = 1
+    for reg in regs:
+        team = reg["team_name"] or ("Individual" if reg["participation_type"] == "individual" else "—")
+        people = [(reg["leader_name"], reg["leader_mobile"] or "")]
+        if reg["participation_type"] == "team":
+            for field in ("member_2", "member_3", "member_4"):
+                name = reg[field]
+                if name and name.strip():
+                    people.append((name.strip(), ""))
+        for name, mobile in people:
+            rows.append([str(serial), Paragraph(team + "<br/><font size='7'>" + reg["registration_id"] + "</font>", cell), Paragraph(name, cell), Paragraph(mobile or " ", cell), Paragraph(reg["college"] or "", cell), ""])
+            serial += 1
+    if len(rows) == 1:
+        rows.append(["", "No registrations found", "", "", "", ""])
+    table = Table(rows, colWidths=[12*mm, 38*mm, 46*mm, 30*mm, 55*mm, 42*mm], repeatRows=1, rowHeights=[10*mm] + [13*mm]*(len(rows)-1))
+    table.setStyle(TableStyle([("BACKGROUND",(0,0),(-1,0),colors.HexColor("#7B1F24")),("GRID",(0,0),(-1,-1),0.5,colors.HexColor("#9CA3AF")),("VALIGN",(0,0),(-1,-1),"MIDDLE"),("LEFTPADDING",(0,0),(-1,-1),5),("RIGHTPADDING",(0,0),(-1,-1),5),("ROWBACKGROUNDS",(0,1),(-1,-1),[colors.white,colors.HexColor("#F8F5F2")])]))
+    story.append(table)
+    story.append(Spacer(1, 3*mm))
+    story.append(Paragraph("Additional team-member mobile numbers are blank because the registration form does not collect them.", styles["Italic"]))
+    pdf.build(story)
+    response = make_response(buffer.getvalue())
+    response.headers["Content-Type"] = "application/pdf"
+    response.headers["Content-Disposition"] = 'attachment; filename="CIVILATHON_2026_Attendance_Sheet.pdf"'
+    return response
+
+
 @app.route('/admin')
 def admin_dashboard():
     gate = admin_required()
