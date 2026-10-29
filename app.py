@@ -446,6 +446,91 @@ def admin_delete_registration(registration_id):
 
 
 
+
+@app.route('/admin/export-participants.xlsx')
+def admin_export_participants_xlsx():
+    gate = admin_required()
+    if gate:
+        return gate
+    conn = get_db()
+    rows = conn.execute('SELECT * FROM registrations ORDER BY created_at DESC').fetchall()
+    conn.close()
+
+    # Export every registration field collected by the form and payment workflow.
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+    from openpyxl.utils import get_column_letter
+    from flask import make_response
+
+    columns = [
+        ('Registration ID', 'registration_id'),
+        ('Participation Type', 'participation_type'),
+        ('Team Name', 'team_name'),
+        ('College', 'college'),
+        ('Team Leader / Participant', 'leader_name'),
+        ('Leader Enrollment Number', 'leader_enrollment'),
+        ('Leader Mobile', 'leader_mobile'),
+        ('Leader Email', 'leader_email'),
+        ('Member 2', 'member_2'),
+        ('Member 2 Enrollment', 'member_2_enrollment'),
+        ('Member 3', 'member_3'),
+        ('Member 3 Enrollment', 'member_3_enrollment'),
+        ('Member 4', 'member_4'),
+        ('Member 4 Enrollment', 'member_4_enrollment'),
+        ('Research Domain', 'research_domain'),
+        ('Problem Statement', 'problem_statement'),
+        ('Proposed Solution', 'proposed_solution'),
+        ('Innovation', 'innovation'),
+        ('Expected Impact', 'expected_impact'),
+        ('PPT Filename', 'ppt_filename'),
+        ('PPT File Path', 'ppt_path'),
+        ('Payment Status', 'payment_status'),
+        ('Payment ID', 'payment_id'),
+        ('Payment Order ID', 'payment_order_id'),
+        ('Payment Signature', 'payment_signature'),
+        ('Amount (INR)', 'amount_paise'),
+        ('Registered At', 'created_at'),
+        ('Paid At', 'paid_at'),
+        ('Payment Reference', 'payment_reference'),
+        ('Payment Screenshot Path', 'payment_screenshot_path'),
+        ('Payment Proof Submitted At', 'payment_submitted_at'),
+        ('Admin Note', 'admin_note'),
+    ]
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = 'Participants'
+    sheet.append([label for label, _field in columns])
+    for row in rows:
+        values = []
+        for label, field in columns:
+            value = row[field]
+            if field == 'amount_paise':
+                value = (value or 0) / 100
+            if value is None:
+                value = ''
+            values.append(value)
+        sheet.append(values)
+
+    header_fill = PatternFill('solid', fgColor='7B1F24')
+    for cell in sheet[1]:
+        cell.font = Font(bold=True, color='FFFFFF')
+        cell.fill = header_fill
+        cell.alignment = Alignment(vertical='top', wrap_text=True)
+    sheet.freeze_panes = 'A2'
+    sheet.auto_filter.ref = sheet.dimensions
+    for column_cells in sheet.columns:
+        max_len = max(len(str(cell.value or '')) for cell in column_cells[:100])
+        sheet.column_dimensions[get_column_letter(column_cells[0].column)].width = min(max(max_len + 2, 14), 36)
+    for row_cells in sheet.iter_rows(min_row=2):
+        for cell in row_cells:
+            cell.alignment = Alignment(vertical='top', wrap_text=True)
+    buffer = io.BytesIO()
+    workbook.save(buffer)
+    response = make_response(buffer.getvalue())
+    response.headers['Content-Type'] = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    response.headers['Content-Disposition'] = 'attachment; filename="CIVILATHON_2026_All_Participant_Details.xlsx' + '"'
+    return response
+
 @app.route('/admin/attendance-sheet.pdf')
 def admin_attendance_sheet():
     gate = admin_required()
